@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ideas de Regalos en Familia</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <h1>🎄 Ideas de Regalos en Familia</h1>
+            <button class="btn-theme" id="btn-theme" title="Cambiar tema">🌙</button>
+        </header>
+
+        <main class="main">
+            <section id="section-personas" class="section active">
+                <div class="section-header">
+                    <h2>Personas</h2>
+                    <button class="btn-add" id="btn-add-persona">+ Agregar</button>
+                </div>
+                <div class="cards-grid" id="grid-personas"></div>
+                <div class="empty-state" id="empty-personas">
+                    <p>No hay personas aún</p>
+                    <button class="btn-add-empty" id="btn-add-persona-empty">+ Agregar persona</button>
+                </div>
+            </section>
+
+            <section id="section-ideas" class="section">
+                <div class="section-header">
+                    <button class="btn-back" id="btn-back-personas">← Volver</button>
+                    <h2 id="titulo-ideas">Ideas para</h2>
+                    <button class="btn-add" id="btn-add-idea">+ Agregar</button>
+                </div>
+                <div class="persona-info" id="persona-info"></div>
+                <div class="cards-grid" id="grid-ideas"></div>
+                <div class="empty-state" id="empty-ideas">
+                    <p>No hay ideas aún</p>
+                    <button class="btn-add-empty" id="btn-add-idea-empty">+ Agregar idea</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="modal" id="modal-persona">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-persona-titulo">Agregar Persona</h3>
+                <button class="modal-close" data-modal="modal-persona">×</button>
+            </div>
+            <form id="form-persona">
+                <input type="hidden" id="persona-id">
+                <div class="form-group">
+                    <label for="persona-nombre">Nombre *</label>
+                    <input type="text" id="persona-nombre" required placeholder="Ej: Mamá">
+                </div>
+                <div class="form-group">
+                    <label for="persona-presupuesto">Presupuesto estimado</label>
+                    <input type="text" id="persona-presupuesto" placeholder="Ej: $500">
+                </div>
+                <div class="form-group">
+                    <label for="persona-gustos">Gustos e intereses</label>
+                    <textarea id="persona-gustos" rows="3" placeholder="Ej: Le gusta cocinar, leer..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" data-modal="modal-persona">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-idea">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-idea-titulo">Agregar Idea</h3>
+                <button class="modal-close" data-modal="modal-idea">×</button>
+            </div>
+            <form id="form-idea">
+                <input type="hidden" id="idea-id">
+                <input type="hidden" id="idea-persona-id">
+                <div class="form-group">
+                    <label for="idea-nombre">Nombre del regalo *</label>
+                    <input type="text" id="idea-nombre" required placeholder="Ej: Libro de cocina">
+                </div>
+                <div class="form-group">
+                    <label for="idea-descripcion">Descripción</label>
+                    <textarea id="idea-descripcion" rows="2" placeholder="Descripción corta..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="idea-precio">Precio aprox</label>
+                        <input type="text" id="idea-precio" placeholder="$50">
+                    </div>
+                    <div class="form-group">
+                        <label for="idea-estado">Estado</label>
+                        <select id="idea-estado">
+                            <option value="Idea">Idea</option>
+                            <option value="Elegida">Elegida</option>
+                            <option value="Comprada">Comprada</option>
+                            <option value="Envuelta">Envuelta</option>
+                            <option value="Entregada">Entregada</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="idea-link">Enlace</label>
+                    <input type="url" id="idea-link" placeholder="https://tienda.com/...">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="idea-propuesto">Propuesto por</label>
+                        <input type="text" id="idea-propuesto" placeholder="Ej: Juan">
+                    </div>
+                    <div class="form-group">
+                        <label for="idea-responsable">Responsable</label>
+                        <input type="text" id="idea-responsable" placeholder="Ej: María">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" data-modal="modal-idea">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-confirm">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3>Confirmar</h3>
+                <button class="modal-close" data-modal="modal-confirm">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message">¿Estás seguro de eliminar este elemento?</p>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" data-modal="modal-confirm">Cancelar</button>
+                <button type="button" class="btn-danger" id="btn-confirm-delete">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</body>
+</html>
