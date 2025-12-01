@@ -17,6 +17,30 @@
         </header>
 
         <main class="main">
+            <div class="budget-bar" id="budget-bar">
+                <div class="budget-header">
+                    <span class="budget-title">💰 Presupuesto Familiar</span>
+                    <button class="btn-edit-budget" id="btn-edit-budget" title="Editar presupuesto">✏️</button>
+                </div>
+                <div class="budget-progress">
+                    <div class="budget-progress-fill" id="budget-progress-fill"></div>
+                </div>
+                <div class="budget-stats">
+                    <div class="budget-stat">
+                        <span class="budget-label">Estimado</span>
+                        <span class="budget-value" id="budget-total">$0</span>
+                    </div>
+                    <div class="budget-stat">
+                        <span class="budget-label">Gastado</span>
+                        <span class="budget-value gastado" id="budget-gastado">$0</span>
+                    </div>
+                    <div class="budget-stat">
+                        <span class="budget-label">Restante</span>
+                        <span class="budget-value restante" id="budget-restante">$0</span>
+                    </div>
+                </div>
+            </div>
+
             <section id="section-personas" class="section active">
                 <div class="section-header">
                     <h2>Personas</h2>
@@ -109,8 +133,12 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="idea-link">Enlace</label>
-                    <input type="url" id="idea-link" placeholder="https://tienda.com/...">
+                    <label for="idea-link">Enlace del producto</label>
+                    <div class="input-with-btn">
+                        <input type="url" id="idea-link" placeholder="https://tienda.com/...">
+                        <button type="button" class="btn-fetch" id="btn-fetch-link" title="Obtener datos del producto">🔍</button>
+                    </div>
+                    <small class="form-hint" id="fetch-status"></small>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -144,6 +172,26 @@
                 <button type="button" class="btn-cancel" data-modal="modal-confirm">Cancelar</button>
                 <button type="button" class="btn-danger" id="btn-confirm-delete">Eliminar</button>
             </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-budget">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h3>Presupuesto Familiar</h3>
+                <button class="modal-close" data-modal="modal-budget">×</button>
+            </div>
+            <form id="form-budget">
+                <div class="form-group">
+                    <label for="budget-input">Presupuesto total</label>
+                    <input type="number" id="budget-input" placeholder="78000" min="0">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" data-modal="modal-budget">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar</button>
+                </div>
+            </form>
         </div>
     </div>
 

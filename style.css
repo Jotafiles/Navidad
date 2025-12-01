@@ -92,6 +92,95 @@ body {
     padding: 16px;
 }
 
+.budget-bar {
+    background: var(--color-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 20px;
+    border: 1px solid var(--color-border);
+}
+
+.budget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.budget-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.btn-edit-budget {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+}
+
+.btn-edit-budget:hover {
+    background: var(--color-bg);
+}
+
+.budget-progress {
+    height: 8px;
+    background: var(--color-bg);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.budget-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-estado-comprada));
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.budget-progress-fill.over {
+    background: linear-gradient(90deg, var(--color-estado-comprada), var(--color-secondary));
+}
+
+.budget-stats {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.budget-stat {
+    text-align: center;
+    flex: 1;
+}
+
+.budget-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 4px;
+}
+
+.budget-value {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.budget-value.gastado {
+    color: var(--color-estado-comprada);
+}
+
+.budget-value.restante {
+    color: var(--color-primary);
+}
+
+.budget-value.restante.negativo {
+    color: var(--color-secondary);
+}
+
 .section {
     display: none;
 }
@@ -459,10 +548,61 @@ body {
     gap: 12px;
 }
 
+.input-with-btn {
+    display: flex;
+    gap: 8px;
+}
+
+.input-with-btn input {
+    flex: 1;
+}
+
+.btn-fetch {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    width: 44px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-fetch:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-fetch.loading {
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.form-hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+}
+
+.form-hint.success {
+    color: var(--color-estado-entregada);
+}
+
+.form-hint.error {
+    color: var(--color-secondary);
+}
+
 .form-actions {
     display: flex;
     gap: 12px;
-    margin-top: 24px;
+    margin-top: 20px;
 }
 
 .btn-cancel {

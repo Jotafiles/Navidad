@@ -9,13 +9,17 @@ const state = {
     currentPersona: null,
     personas: [],
     ideas: [],
-    deleteTarget: null
+    allIdeas: [],
+    deleteTarget: null,
+    budgetTotal: 0
 };
 
 function init() {
     initTheme();
     setupEventListeners();
     loadPersonas();
+    loadBudget();
+    loadAllIdeas();
     subscribeToChanges();
 }
 
@@ -71,6 +75,10 @@ function setupEventListeners() {
     document.getElementById('form-idea').addEventListener('submit', handleSubmitIdea);
 
     document.getElementById('btn-confirm-delete').addEventListener('click', handleConfirmDelete);
+    document.getElementById('btn-fetch-link').addEventListener('click', fetchProductData);
+    
+    document.getElementById('btn-edit-budget').addEventListener('click', openModalBudget);
+    document.getElementById('form-budget').addEventListener('submit', handleSubmitBudget);
 }
 
 function showSection(section) {
@@ -141,6 +149,109 @@ async function loadIdeas(personaId) {
 
     state.ideas = data || [];
     renderIdeas();
+}
+
+async function loadAllIdeas() {
+    const { data, error } = await supabase
+        .from('ideas')
+        .select('*');
+
+    if (!error) {
+        state.allIdeas = data || [];
+        renderBudget();
+    }
+}
+
+async function loadBudget() {
+    const { data, error } = await supabase
+        .from('configuracion')
+        .select('*')
+        .eq('clave', 'presupuesto_familiar')
+        .single();
+
+    if (data) {
+        state.budgetTotal = parseFloat(data.valor) || 0;
+    } else {
+        state.budgetTotal = 0;
+    }
+    renderBudget();
+}
+
+function parsePrice(priceStr) {
+    if (!priceStr) return 0;
+    let cleaned = priceStr.replace(/[^0-9.,]/g, '');
+    cleaned = cleaned.replace(/\./g, '');
+    cleaned = cleaned.replace(',', '.');
+    return parseFloat(cleaned) || 0;
+}
+
+function calculateSpent() {
+    const estadosGastado = ['Comprada', 'Envuelta', 'Entregada'];
+    return state.allIdeas
+        .filter(idea => estadosGastado.includes(idea.estado))
+        .reduce((sum, idea) => sum + parsePrice(idea.precio), 0);
+}
+
+function renderBudget() {
+    const total = state.budgetTotal;
+    const gastado = calculateSpent();
+    const restante = total - gastado;
+    const porcentaje = total > 0 ? Math.min((gastado / total) * 100, 100) : 0;
+
+    document.getElementById('budget-total').textContent = formatMoney(total);
+    document.getElementById('budget-gastado').textContent = formatMoney(gastado);
+    
+    const restanteEl = document.getElementById('budget-restante');
+    restanteEl.textContent = formatMoney(restante);
+    restanteEl.classList.toggle('negativo', restante < 0);
+
+    const progressFill = document.getElementById('budget-progress-fill');
+    progressFill.style.width = `${porcentaje}%`;
+    progressFill.classList.toggle('over', gastado > total);
+}
+
+function formatMoney(amount) {
+    return '$' + Math.round(amount).toLocaleString('es-CL');
+}
+
+function openModalBudget() {
+    document.getElementById('budget-input').value = state.budgetTotal || '';
+    openModal('modal-budget');
+}
+
+async function handleSubmitBudget(e) {
+    e.preventDefault();
+    const valor = document.getElementById('budget-input').value;
+
+    const { data: existing } = await supabase
+        .from('configuracion')
+        .select('*')
+        .eq('clave', 'presupuesto_familiar')
+        .single();
+
+    let error;
+    if (existing) {
+        const result = await supabase
+            .from('configuracion')
+            .update({ valor: valor })
+            .eq('clave', 'presupuesto_familiar');
+        error = result.error;
+    } else {
+        const result = await supabase
+            .from('configuracion')
+            .insert([{ clave: 'presupuesto_familiar', valor: valor }]);
+        error = result.error;
+    }
+
+    if (error) {
+        showToast('Error al guardar presupuesto');
+        return;
+    }
+
+    state.budgetTotal = parseFloat(valor) || 0;
+    renderBudget();
+    closeModal('modal-budget');
+    showToast('Presupuesto actualizado');
 }
 
 function renderPersonas() {
@@ -344,6 +455,7 @@ async function handleSubmitIdea(e) {
         return;
     }
 
+    await loadAllIdeas();
     closeModal('modal-idea');
     showToast(id ? 'Idea actualizada' : 'Idea agregada');
 }
@@ -388,6 +500,7 @@ async function handleConfirmDelete() {
         showToast('Error al eliminar');
     } else {
         showToast('Eliminado');
+        await loadAllIdeas();
     }
 
     state.deleteTarget = null;
@@ -396,7 +509,19 @@ async function handleConfirmDelete() {
 
 async function updateIdeaEstado(id, estado) {
     const { error } = await supabase.from('ideas').update({ estado }).eq('id', id);
-    if (error) showToast('Error al actualizar');
+    if (error) {
+        showToast('Error al actualizar');
+        return;
+    }
+    
+    const ideaLocal = state.ideas.find(i => i.id === id);
+    if (ideaLocal) ideaLocal.estado = estado;
+    
+    const ideaAll = state.allIdeas.find(i => i.id === id);
+    if (ideaAll) ideaAll.estado = estado;
+    
+    renderBudget();
+    renderIdeas();
 }
 
 function subscribeToChanges() {
@@ -410,12 +535,20 @@ function subscribeToChanges() {
     supabase
         .channel('ideas-changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'ideas' }, (payload) => {
+            loadAllIdeas();
             if (state.currentPersonaId && state.currentSection === 'ideas') {
                 if (payload.new?.persona_id === state.currentPersonaId || 
                     payload.old?.persona_id === state.currentPersonaId) {
                     loadIdeas(state.currentPersonaId);
                 }
             }
+        })
+        .subscribe();
+
+    supabase
+        .channel('config-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'configuracion' }, () => {
+            loadBudget();
         })
         .subscribe();
 }
@@ -428,6 +561,57 @@ function showToast(message) {
     setTimeout(() => {
         toast.classList.remove('visible');
     }, 2500);
+}
+
+async function fetchProductData() {
+    const linkInput = document.getElementById('idea-link');
+    const btn = document.getElementById('btn-fetch-link');
+    const status = document.getElementById('fetch-status');
+    const url = linkInput.value.trim();
+
+    if (!url) {
+        status.textContent = 'Ingresa un enlace primero';
+        status.className = 'form-hint error';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.classList.add('loading');
+    status.textContent = 'Obteniendo datos...';
+    status.className = 'form-hint';
+
+    try {
+        const response = await fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}`);
+        const data = await response.json();
+
+        if (data.status === 'success' && data.data) {
+            const product = data.data;
+            
+            if (product.title) {
+                document.getElementById('idea-nombre').value = product.title;
+            }
+            
+            if (product.description) {
+                document.getElementById('idea-descripcion').value = product.description;
+            }
+            
+            if (product.price) {
+                document.getElementById('idea-precio').value = product.price;
+            }
+
+            status.textContent = '✓ Datos obtenidos';
+            status.className = 'form-hint success';
+        } else {
+            status.textContent = 'No se encontraron datos';
+            status.className = 'form-hint error';
+        }
+    } catch (error) {
+        status.textContent = 'Error al obtener datos';
+        status.className = 'form-hint error';
+    }
+
+    btn.disabled = false;
+    btn.classList.remove('loading');
 }
 
 document.addEventListener('DOMContentLoaded', init);
